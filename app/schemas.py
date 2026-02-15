@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import Annotated
 from datetime import datetime
 
@@ -44,14 +44,40 @@ class PostCreate(BaseModel):
 
     tags: Annotated[list[str], Field(default_factory=list, description="Список имён тегов")]
 
+    @field_validator("tags", mode="before")
+    @classmethod
+    def fillter_null_tags(cls, tags):
+        if tags is None:
+            return tags
+        right_tags = []
+        for tag in tags:
+            if tag is not None:
+                right_tags.append(tag)
+        return right_tags    
+    
+    
 class PostUpdate(BaseModel):
     title: Annotated[str | None, Field(min_length=3, max_length=100, description="Название поста")] = None
     content: Annotated[str | None, Field(min_length=100, description="Текст поста(минимум 100 символов)")] = None
     status: Annotated[str | None, Field(default="draft", pattern="^(draft|published)$")] = None
 
-    tags: Annotated[list[str], Field(default_factory=list, description="Список имён тегов")]
+    tags: Annotated[list[str] | None, Field(None, description="Список имён тегов")] = None
+    
+    
 
-
+class PostShort(BaseModel):
+    id: Annotated[int, Field(description="ID поста")]
+    title: Annotated[str, Field(min_length=3, max_length=100, description="Название поста")]
+    slug: Annotated[str, Field(description="URL поста")]
+    author: Annotated[User, Field(description="Автор поста")]
+    created_at: Annotated[datetime, Field(description="Дата создания поста")]
+    status: Annotated[str, Field(default="draft", pattern="^(draft|published)$")]
+    view_count: Annotated[int, Field(description="Кол-во просмотров")]
+    tags: Annotated[list[Tag], Field(default_factory=list, description="Список имён тегов")]
+    preview: Annotated[str, Field(max_length=200, description="Первые 200 символов текста")]
+    
+    model_config = ConfigDict(from_attributes=True)
+    
 class Post(BaseModel):
     id: Annotated[int, Field(description="ID поста")]
     title: Annotated[str, Field(min_length=3, max_length=100, description="Название поста")]
@@ -62,7 +88,7 @@ class Post(BaseModel):
     updated_at: Annotated[datetime, Field(description="Дата обновления поста")]
     status: Annotated[str, Field(default="draft", pattern="^(draft|published)$")]
     view_count: Annotated[int, Field(description="Кол-во просмотров")]
-    tags: Annotated[list[Tag], Field(default_factory    =list, description="Список имён тегов")]
+    tags: Annotated[list[Tag], Field(default_factory=list, description="Список имён тегов")]
     
     model_config = ConfigDict(from_attributes=True)
     

@@ -2,6 +2,7 @@ import html
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.models.users import User as UserModel
 from app.models.posts import Post as PostModel
@@ -27,7 +28,7 @@ async def get_comments_by_slug(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пост не найден")
 
     comments = await db.scalars(
-        select(CommentModel)
+        select(CommentModel).options(selectinload(CommentModel.author))
         .where(CommentModel.post_id == post.id)
         .offset((page - 1) * page_size)
         .limit(page_size)
@@ -67,7 +68,7 @@ async def create_comment(
     )
     db.add(db_comment)
     await db.commit()
-    await db.refresh(db_comment)
+    db_comment = await db.scalar(select(CommentModel).options(selectinload(CommentModel.author)).where(CommentModel.id == db_comment.id))
     return db_comment
 
 

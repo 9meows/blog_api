@@ -8,13 +8,13 @@ from app.models.users import User as UserModel
 from app.models.posts import Post as PostModel
 from app.models.tags import Tag
 from app.core.db_depends import get_session_db
-from app.schemas import Post, PostCreate, PostUpdate
+from app.schemas import Post, PostCreate, PostUpdate, PostShort
 from app.auth import get_current_user
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
 
-@router.get("/", response_model=list[Post])
+@router.get("/", response_model=list[PostShort])
 async def get_all_posts(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
@@ -37,7 +37,22 @@ async def get_all_posts(
         stmt = stmt.where(PostModel.tags.any(Tag.id == tag_obj.id))
 
     posts = await db.scalars(stmt.options(selectinload(PostModel.tags), selectinload(PostModel.author)).offset((page - 1) * page_size).limit(page_size))
-    return posts.all()
+    
+    reslt = [PostShort(
+            id=post.id,
+            title=post.title,
+            slug=post.slug,
+            author=post.author,
+            created_at=post.created_at,
+            status=post.status,
+            view_count=post.view_count,
+            tags=post.tags,
+            preview=post.content[:200]
+        )
+        for post in posts.all()
+    ]
+    return reslt
+    
 
 
 @router.get("/{slug}", response_model=Post)
