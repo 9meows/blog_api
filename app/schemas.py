@@ -39,8 +39,15 @@ class Tag(BaseModel):
 
 class PostCreate(BaseModel):
     title: Annotated[str, Field(min_length=3, max_length=100, description="Название поста")]
-    content: Annotated[str, Field(min_length=50, description="Текст поста(минимум 50 символов)")]
+    content: Annotated[str, Field(min_length=100, description="Текст поста(минимум 100 символов)")]
     status: Annotated[str, Field(default="draft", pattern="^(draft|published)$")]
+
+    tags: Annotated[list[str], Field(default_factory=list, description="Список имён тегов")]
+
+class PostUpdate(BaseModel):
+    title: Annotated[str | None, Field(min_length=3, max_length=100, description="Название поста")] = None
+    content: Annotated[str | None, Field(min_length=100, description="Текст поста(минимум 100 символов)")] = None
+    status: Annotated[str | None, Field(default="draft", pattern="^(draft|published)$")] = None
 
     tags: Annotated[list[str], Field(default_factory=list, description="Список имён тегов")]
 
@@ -49,7 +56,7 @@ class Post(BaseModel):
     id: Annotated[int, Field(description="ID поста")]
     title: Annotated[str, Field(min_length=3, max_length=100, description="Название поста")]
     slug: Annotated[str, Field(description="URL поста")]
-    content: Annotated[str, Field(min_length=100, description="Текст поста(минимум 50 символов)")]
+    content: Annotated[str, Field(min_length=100, description="Текст поста(минимум 100 символов)")]
     author: Annotated[User, Field(description="Автор поста")]
     created_at: Annotated[datetime, Field(description="Дата создания поста")]
     updated_at: Annotated[datetime, Field(description="Дата обновления поста")]
