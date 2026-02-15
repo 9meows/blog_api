@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
     
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
     

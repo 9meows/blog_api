@@ -2,6 +2,11 @@ from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import Annotated
 from datetime import datetime
 
+#Token
+class TokenResponse(BaseModel):
+    access_token: Annotated[str, Field(description="Access токен")]
+    token_type: Annotated[str, Field(description="Тип токена")] = "bearer"
+ 
 # --- USER ---C
 class UserCreate(BaseModel):
     username: Annotated[str, Field(min_length=3, max_length=50, description="Имя пользователя")]
