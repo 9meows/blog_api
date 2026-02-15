@@ -17,5 +17,5 @@ DATABASE_URL = f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@
 async_engine = create_async_engine(DATABASE_URL, echo=True)
 
 
-async_session_maker = async_sessionmaker(bind=async_engine, expire_on_commit=False)
+async_session_maker = async_sessionmaker(async_engine, expire_on_commit=False)
 

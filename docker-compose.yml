@@ -20,6 +20,8 @@ services:
       build: .
       ports:
         - "8000:8000"
+      environment:
+        DB_HOST: postgres
       env_file:
         - .env
       depends_on:

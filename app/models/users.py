@@ -10,7 +10,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
-    date_joinded: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    date_joined: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     
     posts: Mapped[list["Post"]] = relationship("Post", back_populates="author", cascade="all, delete-orphan")
