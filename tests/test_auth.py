@@ -38,4 +38,6 @@ async def test_login_wrong_password(client):
     loging_response = await client.post("/api/login", data={"username": "testuser", "password": "qwerty1"})
     
     assert loging_response.status_code == 401
+    assert loging_response.json()["detail"] == "Неверное имя пользователя или пароль"
+
     
