@@ -7,7 +7,7 @@ from app.models.posts import Post as PostModel
 from app.core.db_depends import get_session_db
 from app.schemas import User
 
-router = APIRouter(prefix="/api/users")
+router = APIRouter(prefix="/api/users", tags=["users"])
 
 
 @router.get("/", response_model=list[User])

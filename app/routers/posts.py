@@ -3,6 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from slugify import slugify
 from sqlalchemy.orm import selectinload
+from fastapi_cache.decorator import cache
+from fastapi_cache import FastAPICache
 
 from app.models.users import User as UserModel  
 from app.models.posts import Post as PostModel
@@ -15,6 +17,7 @@ router = APIRouter(prefix="/api/posts", tags=["posts"])
 
 
 @router.get("/", response_model=list[PostShort])
+@cache(expire=300)
 async def get_all_posts(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
@@ -103,6 +106,7 @@ async def create_post(
     )
     db.add(db_post)
     await db.commit()
+    await FastAPICache.clear(namespace="blog-cache")
     post = await db.scalar(select(PostModel).options(selectinload(PostModel.tags), selectinload(PostModel.author)).where(PostModel.id == db_post.id))
 
     return post
@@ -141,6 +145,8 @@ async def update_post(
 
     await db.commit()
     await db.refresh(post)
+    await FastAPICache.clear(namespace="blog-cache")
+
     return post
 
 
@@ -158,5 +164,6 @@ async def delete_post_by_slug(
 
     await db.delete(post)
     await db.commit()
+    await FastAPICache.clear(namespace="blog-cache")
     
 
