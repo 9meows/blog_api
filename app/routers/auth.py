@@ -23,8 +23,6 @@ async def create_user(user: UserCreate, db: AsyncSession = Depends(get_session_d
     if existing_email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь с таким email уже существует")
 
-    
-    
     db_user = UserModel(username = user.username, email = user.email, 
                    hashed_password = hash_password(user.password)) 
     db.add(db_user)
