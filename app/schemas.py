@@ -31,6 +31,7 @@ class User(BaseModel):
     email: Annotated[EmailStr, Field(description="Почта пользователя")]
     date_joined: Annotated[datetime, Field(description="Дата присоединения пользователя")]
     is_active: Annotated[bool, Field(description="Активность пользователя")]
+    avatar: Annotated[str | None, Field(description="Аватар пользователя")] = None
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -41,6 +42,23 @@ class Tag(BaseModel):
     name: Annotated[str, Field(description="Имя тэга")]
     slug: Annotated[str, Field(description="URL тэга")]
 
+    model_config = ConfigDict(from_attributes=True)
+
+# --- comment
+class CommentCreate(BaseModel):
+    text: Annotated[str, Field(min_length=1, max_length=2000, description="Текст поста")]
+    
+    parent_id: Annotated[int | None, Field(description="ID комментария родителя")] = None
+
+class Comment(BaseModel):
+    id: Annotated[int, Field(description="ID комментария")]
+    post_id: Annotated[int, Field(description="ID поста для коммента")]
+    author: Annotated[User, Field(description="ID автора коммента")]
+    text: Annotated[str, Field(description="Текст поста")]
+    created_at: Annotated[datetime, Field(description="Время создания комментария")]
+    
+    parent_id: Annotated[int | None, Field(description="ID комментария родителя")] = None
+    
     model_config = ConfigDict(from_attributes=True)
     
 # --- POST ---C
@@ -97,25 +115,11 @@ class Post(BaseModel):
     status: Annotated[str, Field(default="draft", pattern="^(draft|published)$")]
     view_count: Annotated[int, Field(description="Кол-во просмотров")]
     tags: Annotated[list[Tag], Field(default_factory=list, description="Список имён тегов")]
+    comments: Annotated[list[Comment], Field(default_factory=list)]
     
     model_config = ConfigDict(from_attributes=True)
     
 
     
-# --- comment
-class CommentCreate(BaseModel):
-    text: Annotated[str, Field(min_length=1, max_length=2000, description="Текст поста")]
-    
-    parent_id: Annotated[int | None, Field(description="ID комментария родителя")] = None
 
-class Comment(BaseModel):
-    id: Annotated[int, Field(description="ID комментария")]
-    post_id: Annotated[int, Field(description="ID поста для коммента")]
-    author: Annotated[User, Field(description="ID автора коммента")]
-    text: Annotated[str, Field(description="Текст поста")]
-    created_at: Annotated[datetime, Field(description="Время создания комментария")]
-    
-    parent_id: Annotated[int | None, Field(description="ID комментария родителя")] = None
-    
-    model_config = ConfigDict(from_attributes=True)
     
