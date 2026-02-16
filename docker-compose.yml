@@ -28,6 +28,8 @@ services:
         - app_network
     api:
       build: .
+      volumes:
+        - .:/app
       ports:
         - "8000:8000"
       environment:
