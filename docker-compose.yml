@@ -10,7 +10,7 @@ services:
       volumes:
         - postgres_data:/var/lib/postgresql/data
       healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U postgres"]
+        test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
         interval: 10s
         timeout: 5s
         retries: 5
@@ -28,8 +28,6 @@ services:
         - app_network
     redis:
       image: redis:7-alpine
-      ports:
-        - "6379:6379"
       networks:
         - app_network
       healthcheck:
@@ -41,6 +39,7 @@ services:
       build: .
       volumes:
         - .:/app
+        - ./media:/app/media
       ports:
         - "8000:8000"
       environment:

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, EmailStr, ConfigDict, field_validator
 from typing import Annotated
 from datetime import datetime
+from fastapi import Form
 
 #Token
 class TokenResponse(BaseModel):
@@ -12,6 +13,13 @@ class UserCreate(BaseModel):
     username: Annotated[str, Field(min_length=3, max_length=50, description="Имя пользователя")]
     email: Annotated[EmailStr, Field(description="Почта пользователя")]
     password: Annotated[str, Field(min_length=6, description="Пароль пользователя(минимум 6 символов)")]
+    
+    @classmethod
+    def as_form(cls, username:Annotated[str, Form(...)],
+                email: Annotated[EmailStr, Form(...)],
+                password: Annotated[str, Form(...)]) -> "UserCreate":
+        return cls(username = username, email=email, password=password)
+    
 
 class UserLogin(BaseModel):
     username: Annotated[str, Field(min_length=3, max_length=50, description="Имя пользователя")]

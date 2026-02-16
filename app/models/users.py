@@ -12,5 +12,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     date_joined: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    avatar: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    
     posts: Mapped[list["Post"]] = relationship("Post", back_populates="author", cascade="all, delete-orphan")
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="author", cascade="all, delete-orphan")

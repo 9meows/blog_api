@@ -8,8 +8,10 @@ from redis import asyncio as aioredis
 from contextlib import asynccontextmanager
 from fastapi_cache.decorator import cache
 from starlette.requests import Request
-from app.routers import auth, users, posts, comments, stats, search
+from fastapi.staticfiles import StaticFiles
 
+
+from app.routers import auth, users, posts, comments, stats, search
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +28,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Blog API", lifespan=lifespan)
 
+app.mount("/media", StaticFiles(directory="media"), name="media")    
     
 app.include_router(auth.router)
 app.include_router(users.router)
