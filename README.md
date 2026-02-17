@@ -353,10 +353,8 @@ blog_api/
 │   │   ├── comments.py        
 │   │   ├── users.py            
 │   │   ├── search.py           
-│   │   └── stats.py           
-│   ├── static/
-│   │   └── uploads/            
-│   │       └── avatars/       
+│   │   └── stats.py                    
+│   │            
 │   ├── auth.py                 
 │   ├── schemas.py              
 │   └── main.py                 
