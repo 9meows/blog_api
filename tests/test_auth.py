@@ -2,7 +2,7 @@ import pytest
 
 @pytest.mark.asyncio
 async def test_register_success(client):
-    register_reponse = await client.post("/api/register", json={
+    register_reponse = await client.post("/api/register", data={
         "username": "testuser",
         "email": "test@example.com",
         "password": "qwerty"
@@ -13,12 +13,12 @@ async def test_register_success(client):
     
 @pytest.mark.asyncio
 async def test_register_failed(client):
-    await client.post("/api/register", json={
+    await client.post("/api/register", data={
         "username": "testuser",
         "email": "test@example.com",
         "password": "qwerty"
     })
-    register_reponse = await client.post("/api/register", json={
+    register_reponse = await client.post("/api/register", data={
         "username": "testuser",
         "email": "test@example.com",
         "password": "qwerty"
@@ -29,7 +29,7 @@ async def test_register_failed(client):
 
 @pytest.mark.asyncio
 async def test_login_wrong_password(client):
-    await client.post("/api/register", json={
+    await client.post("/api/register", data={
         "username": "testuser",
         "email": "test@example.com",
         "password": "qwerty"

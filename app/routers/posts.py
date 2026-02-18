@@ -9,6 +9,7 @@ from fastapi_cache import FastAPICache
 from app.models.users import User as UserModel  
 from app.models.posts import Post as PostModel
 from app.models.tags import Tag
+from app.models.comments import Comment as CommentModel
 from app.core.db_depends import get_session_db
 from app.schemas import Post, PostCreate, PostUpdate, PostShort
 from app.auth import get_current_user
@@ -70,7 +71,9 @@ async def get_post_by_slug(slug: str, db: AsyncSession = Depends(get_session_db)
         update(PostModel).where(PostModel.id == post.id).values(view_count=PostModel.view_count + 1)
     )
     await db.commit()
-    post = await db.scalar(select(PostModel).options(selectinload(PostModel.tags), selectinload(PostModel.author)).where(PostModel.slug == slug, PostModel.status == "published"))
+    post = await db.scalar(select(PostModel).options(selectinload(PostModel.tags), selectinload(PostModel.author), 
+                                                     selectinload(PostModel.comments).selectinload(CommentModel.author)).
+                           where(PostModel.slug == slug, PostModel.status == "published"))
     return post
 
 
@@ -107,8 +110,10 @@ async def create_post(
     db.add(db_post)
     await db.commit()
     await FastAPICache.clear(namespace="blog-cache")
-    post = await db.scalar(select(PostModel).options(selectinload(PostModel.tags), selectinload(PostModel.author)).where(PostModel.id == db_post.id))
-
+    post = await db.scalar(select(PostModel).
+                           options(selectinload(PostModel.tags),selectinload(PostModel.author),selectinload(PostModel.comments).
+                                   selectinload(CommentModel.author)).
+                           where(PostModel.id == db_post.id))
     return post
 
 
@@ -145,6 +150,15 @@ async def update_post(
 
     await db.commit()
     await db.refresh(post)
+    post = await db.scalar( 
+    select(PostModel)
+    .options(
+        selectinload(PostModel.tags),
+        selectinload(PostModel.author),
+        selectinload(PostModel.comments).selectinload(CommentModel.author)
+    )
+    .where(PostModel.id == post.id)
+)
     await FastAPICache.clear(namespace="blog-cache")
 
     return post

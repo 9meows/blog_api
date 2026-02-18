@@ -3,6 +3,8 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
 from sqlalchemy import text
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.inmemory import InMemoryBackend
 
 from app.main import app
 from app.core.database import Base
@@ -45,6 +47,7 @@ async def client(db_session):
         transport=ASGITransport(app=app),
         base_url="http://test"
     ) as ac:
+        FastAPICache.init(InMemoryBackend(), prefix="test")
         yield ac
 
     app.dependency_overrides.clear()
@@ -52,7 +55,7 @@ async def client(db_session):
 
 @pytest_asyncio.fixture
 async def auth_client(client):
-    await client.post("/api/register", json={
+    await client.post("/api/register", data={
         "username": "testuser",
         "email": "test@example.com",
         "password": "qwerty"
