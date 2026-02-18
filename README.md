@@ -328,6 +328,28 @@ curl http://localhost:8000/api/tags/cloud/
 - Допустимые статусы статьи — `draft` или `published`
 
 ---
+---
+
+### Анализ тональности отзывов
+
+Анализ отзыва на позитивный/негативный тон с помощью LSTM модели.
+```bash
+curl -X POST http://localhost:8000/api/sentiment \
+  -H "Content-Type: application/json" \
+  -d '{"text": "This movie is amazing!"}'
+```
+
+Ответ:
+```json
+{
+  "sentiment": "positive",
+  "confidence": 0.75
+}
+```
+
+**Примечание:** Модель (~115 МБ) не включена в репозиторий. [Скачать с Google Drive](https://drive.google.com/drive/folders/1JaBy8aHcvqhbkAb-o7t46EKigKWHSgh2?usp=sharing). Положить файлы в `model/sentiment_model.keras` и `model/tokenizer.pkl`, затем `docker-compose restart api`.
+
+---
 
 ## Структура проекта
 
