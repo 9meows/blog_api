@@ -26,6 +26,9 @@ async def get_all_posts(
     author: str | None = Query(None),
     db: AsyncSession = Depends(get_session_db)
 ):
+    """
+        Возвращает список всех опубликованных статей.
+    """
     stmt = select(PostModel).where(PostModel.status == "published")
 
     if author:
@@ -40,7 +43,8 @@ async def get_all_posts(
             return []
         stmt = stmt.where(PostModel.tags.any(Tag.id == tag_obj.id))
 
-    posts = await db.scalars(stmt.options(selectinload(PostModel.tags), selectinload(PostModel.author)).offset((page - 1) * page_size).limit(page_size))
+    posts = await db.scalars(stmt.options(selectinload(PostModel.tags), selectinload(PostModel.author)).
+                             offset((page - 1) * page_size).limit(page_size))
     
     reslt = [PostShort(
             id=post.id,
@@ -58,12 +62,13 @@ async def get_all_posts(
     return reslt
     
 
-
 @router.get("/{slug}", response_model=Post)
 async def get_post_by_slug(slug: str, db: AsyncSession = Depends(get_session_db)):
-    post = await db.scalar(
-        select(PostModel).where(PostModel.slug == slug, PostModel.status == "published")
-    )
+    """
+        Возвращает детальную информацию о статье по его slug.
+    """
+    post = await db.scalar(select(PostModel).where(PostModel.slug == slug, PostModel.status == "published"))
+    
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Статья не найдена")
 
@@ -83,6 +88,9 @@ async def create_post(
     current_user: UserModel = Depends(get_current_user), 
     db: AsyncSession = Depends(get_session_db)
 ):
+    """
+    Создаёт новую статью, привязанный к текущему пользователю (только для авторизованных пользователей)
+    """
     base_slug = slugify(post.title)
     slug_post = base_slug
     counter = 1
@@ -124,7 +132,11 @@ async def update_post(
     current_user: UserModel = Depends(get_current_user), 
     db: AsyncSession = Depends(get_session_db)
 ):
-    post = await db.scalar(select(PostModel).options(selectinload(PostModel.tags), selectinload(PostModel.author)).where(PostModel.slug == slug))
+    """
+    Обновляет статью по её slug (только автор)
+    """
+    post = await db.scalar(select(PostModel).options(selectinload(PostModel.tags), selectinload(PostModel.author))
+                           .where(PostModel.slug == slug))
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пост не найден")
     if post.author_id != current_user.id:
@@ -170,6 +182,9 @@ async def delete_post_by_slug(
     current_user: UserModel = Depends(get_current_user),
     db: AsyncSession = Depends(get_session_db)
 ):
+    """
+    Удаляет статью по её slug (только автор)
+    """
     post = await db.scalar(select(PostModel).where(PostModel.slug == slug))
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пост не найден")

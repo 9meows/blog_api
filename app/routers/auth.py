@@ -21,7 +21,9 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_IMAGE_SIZE = 2 * 1024 * 1024  # 2 097 152 байт
 
 async def save_user_avatar(file: UploadFile) -> str:
-    
+    """
+    Сохраняет изображение пользователя и возвращает относительный URL.
+    """
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Only JPG, PNG or WebP images are allowed")
 
@@ -40,7 +42,9 @@ async def save_user_avatar(file: UploadFile) -> str:
 async def create_user(user: UserCreate = Depends(UserCreate.as_form),
                       avatar: UploadFile | None = File(None),
                       db: AsyncSession = Depends(get_session_db)):
-    
+    """
+    Регистрирует нового пользователя
+    """
     existing = await db.scalar(select(UserModel).where(UserModel.username == user.username))
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Пользователь с таким username уже существует")
@@ -51,7 +55,8 @@ async def create_user(user: UserCreate = Depends(UserCreate.as_form),
     
     image_url = await save_user_avatar(avatar) if avatar else None
     db_user = UserModel(username = user.username, email = user.email, 
-                   hashed_password = hash_password(user.password), avatar=image_url) 
+                   hashed_password = hash_password(user.password), avatar=image_url)
+     
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user) 
@@ -59,6 +64,9 @@ async def create_user(user: UserCreate = Depends(UserCreate.as_form),
     
 @router.post("/login", response_model=TokenResponse)
 async def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_session_db)):
+    """
+    Аутентифицирует пользователя и возвращает access_token
+    """
     user = await db.scalar(select(UserModel).where(form_data.username == UserModel.username, UserModel.is_active == True))
     
     if not user or not verify_password(form_data.password, user.hashed_password):

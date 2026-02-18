@@ -11,7 +11,7 @@ from starlette.requests import Request
 from fastapi.staticfiles import StaticFiles
 
 
-from app.routers import auth, users, posts, comments, stats, search
+from app.routers import auth, users, posts, comments, stats, search, sentiment
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,6 +36,7 @@ app.include_router(posts.router)
 app.include_router(comments.router)
 app.include_router(stats.router)
 app.include_router(search.router)
+app.include_router(sentiment.router)
 
 @app.get("/hp")
 async def get_health() -> dict:

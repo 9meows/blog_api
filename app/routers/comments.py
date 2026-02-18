@@ -20,10 +20,12 @@ async def get_comments_by_slug(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_session_db)
-):
-    post = await db.scalar(
-        select(PostModel).where(PostModel.slug == slug, PostModel.status == "published")
-    )
+    ):
+    """
+    Возвращает комментарии к статье по её slug
+    """
+    post = await db.scalar(select(PostModel).where(PostModel.slug == slug, PostModel.status == "published"))
+    
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пост не найден")
 
@@ -32,7 +34,8 @@ async def get_comments_by_slug(
         .where(CommentModel.post_id == post.id)
         .offset((page - 1) * page_size)
         .limit(page_size)
-    )
+        )
+    
     return comments.all()
 
 
@@ -43,9 +46,11 @@ async def create_comment(
     current_user: UserModel = Depends(get_current_user),
     db: AsyncSession = Depends(get_session_db)
 ):
-    post = await db.scalar(
-        select(PostModel).where(PostModel.slug == slug, PostModel.status == "published")
-    )
+    """
+    Добавляет комментарий (только для авторизованных пользователей)
+    """
+    post = await db.scalar(select(PostModel).where(PostModel.slug == slug, PostModel.status == "published"))
+    
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пост не найден")
 
@@ -58,6 +63,7 @@ async def create_comment(
         )
         if parent is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Родительский комментарий не найден")
+        
     safe_text = html.escape(comment.text)
 
     db_comment = CommentModel(
@@ -66,9 +72,12 @@ async def create_comment(
         text=safe_text,
         parent_id=comment.parent_id
     )
+    
     db.add(db_comment)
     await db.commit()
-    db_comment = await db.scalar(select(CommentModel).options(selectinload(CommentModel.author)).where(CommentModel.id == db_comment.id))
+    db_comment = await db.scalar(select(CommentModel).options(selectinload(CommentModel.author)).
+                                 where(CommentModel.id == db_comment.id))
+    
     return db_comment
 
 
@@ -78,15 +87,15 @@ async def delete_comment(
     current_user: UserModel = Depends(get_current_user),
     db: AsyncSession = Depends(get_session_db)
 ):
-    comment = await db.scalar(
-        select(CommentModel).where(CommentModel.id == id)
-    )
+    """
+    Удаляет комментарий по его id (автор комментария или автор статьи)
+    """
+    comment = await db.scalar(select(CommentModel).where(CommentModel.id == id))
+    
     if comment is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Комментарий не найден")
 
-    post = await db.scalar(
-        select(PostModel).where(PostModel.id == comment.post_id)
-    )
+    post = await db.scalar(select(PostModel).where(PostModel.id == comment.post_id))
 
     is_comment_author = comment.author_id == current_user.id
     is_post_author = post.author_id == current_user.id

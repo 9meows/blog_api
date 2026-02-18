@@ -14,7 +14,12 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 async def get_all_users(page: int = Query(1, ge=1),
                         page_size: int = Query(10, ge=1, le=100),
                         db: AsyncSession = Depends(get_session_db)):
-    all_users = await db.scalars(select(UserModel).where(UserModel.is_active == True).offset((page - 1) * page_size).limit(page_size))
+    """
+    Возвращает список всех профилей пользователей 
+    """
+    all_users = await db.scalars(select(UserModel).where(UserModel.is_active == True).
+                                 offset((page - 1) * page_size)
+                                 .limit(page_size))
     return all_users.all()
 
 
@@ -23,7 +28,9 @@ async def get_user_posts_by_username(username: str,
                                      page: int = Query(1, ge=1),
                                      page_size: int = Query(10, ge=1, le=100),
                                      db: AsyncSession = Depends(get_session_db)):
-    
+    """
+    Возвращает список статей пользователя по его username
+    """
     user = await db.scalar(select(UserModel).where(UserModel.username == username, UserModel.is_active == True))
     
     if user is None:
@@ -37,6 +44,9 @@ async def get_user_posts_by_username(username: str,
 
 @router.get("/{username}", response_model=User)
 async def get_user_by_username(username: str, db: AsyncSession = Depends(get_session_db)):
+    """
+    Возвращает пользователя по его username
+    """ 
     user = await db.scalar(select(UserModel).where(UserModel.username == username, UserModel.is_active == True))
     
     if user is None:
