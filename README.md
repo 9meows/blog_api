@@ -343,11 +343,9 @@ curl -X POST http://localhost:8000/api/sentiment \
 ```json
 {
   "sentiment": "positive",
-  "confidence": 0.75
+  "confidence": 0.88
 }
 ```
-
-**Примечание:** Модель (~115 МБ) не включена в репозиторий. [Скачать с Google Drive](https://drive.google.com/drive/folders/1JaBy8aHcvqhbkAb-o7t46EKigKWHSgh2?usp=sharing). Положить файлы в `model/sentiment_model.keras` и `model/tokenizer.pkl`, затем `docker-compose restart api`.
 
 ---
 
